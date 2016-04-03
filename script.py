@@ -26,8 +26,8 @@ def ldaLearn(X,y):
     noUniqueClasses = len(uniqueClasses)
     means = []
     for i in xrange(noUniqueClasses):
-        means.append(np.mean(X[y==i],axis=0))
-
+        means.append(np.mean(X[y==uniqueClasses[i]],axis=0))
+    covmat = np.cov(X,rowvar=0) 
     return means,covmat
 
 def qdaLearn(X,y):
