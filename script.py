@@ -75,8 +75,7 @@ def learnOLERegression(X,y):
     # w = d x 1                                                                
     # IMPLEMENT THIS METHOD
     # (X.T x X)-1 * X.T y                                                   
-    w = np.dot(np.linalg.inv(np.dot(X.T, X)) , np.dot(X.T, y))
-    return w
+    return np.dot(np.linalg.inv(np.dot(X.T, X)) , np.dot(X.T, y))
 
 def learnRidgeRegression(X,y,lambd):
     # Inputs:
@@ -86,7 +85,8 @@ def learnRidgeRegression(X,y,lambd):
     # Output:                                                                  
     # w = d x 1                                                                
 
-    # IMPLEMENT THIS METHOD                                                   
+    # IMPLEMENT THIS METHOD
+
     return w
 
 def testOLERegression(w,Xtest,ytest):
@@ -98,10 +98,10 @@ def testOLERegression(w,Xtest,ytest):
     # rmse
     
     # IMPLEMENT THIS METHOD
-    rmse = np.square( np.subtract( ytest, np.dot(Xtest, w) ) )
+    squaredDifference = np.square( np.subtract( ytest, np.dot(Xtest, w) ) )
+    rmse = np.sum(squaredDifference)
     rmse /= Xtest.shape[0]
-    rmse = np.sqrt(rmse)
-    return np.sum(rmse)
+    return sqrt(rmse)
 
 def regressionObjVal(w, X, y, lambd):
 
@@ -119,10 +119,12 @@ def mapNonLinear(x,p):
     # Outputs:                                                                 
     # Xd - (N x (d+1))                                                         
     # IMPLEMENT THIS METHOD
-    return Xd
+    #Conver x to an array of scalars
+
+    return np.array([x**p for p in range(0,p+1)])
 
 # Main script
-
+"""
 # Problem 1
 # load the sample data                                                                 
 if sys.version_info.major == 2:
@@ -156,7 +158,7 @@ plt.show()
 zacc,zqdares = qdaTest(means,covmats,xx,np.zeros((xx.shape[0],1)))
 plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])))
 plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
-
+"""
 # Problem 2
 
 if sys.version_info.major == 2:
@@ -203,7 +205,6 @@ for lambd in lambdas:
     rmses4[i] = testOLERegression(w_l,Xtest_i,ytest)
     i = i + 1
 plt.plot(lambdas,rmses4)
-
 
 # Problem 5
 pmax = 7
