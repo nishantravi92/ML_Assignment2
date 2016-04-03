@@ -98,7 +98,6 @@ def testOLERegression(w,Xtest,ytest):
     # rmse
     
     # IMPLEMENT THIS METHOD
-    
     rmse = np.square( np.subtract( ytest, np.dot(Xtest, w) ) )
     rmse /= Xtest.shape[0]
     rmse = np.sqrt(rmse)
@@ -131,7 +130,6 @@ if sys.version_info.major == 2:
 else:
     X,y,Xtest,ytest = pickle.load(open('sample.pickle','rb'),encoding = 'latin1')
 
-"""
 # LDA
 means,covmat = ldaLearn(X,y)
 ldaacc = ldaTest(means,covmat,Xtest,ytest)
@@ -158,7 +156,7 @@ plt.show()
 zacc,zqdares = qdaTest(means,covmats,xx,np.zeros((xx.shape[0],1)))
 plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])))
 plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
-"""
+
 # Problem 2
 
 if sys.version_info.major == 2:
