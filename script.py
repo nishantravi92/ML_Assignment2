@@ -18,8 +18,7 @@ def ldaLearn(X,y):
     # means - A d x k matrix containing learnt means for each of the k classes
     # covmat - A single d x d learnt covariance matrix 
     
-    # IMPLEMENT THIS METHOD
-    
+    # IMPLEMENT THIS METHOD  
     N = X.shape[0]
     d = X.shape[1]
     uniqueClasses = np.unique(y)
@@ -53,6 +52,7 @@ def ldaTest(means,covmat,Xtest,ytest):
     # ypred - N x 1 column vector indicating the predicted labels
 
     # IMPLEMENT THIS METHOD
+
     return acc,ypred
 
 def qdaTest(means,covmats,Xtest,ytest):
@@ -73,7 +73,9 @@ def learnOLERegression(X,y):
     # y = N x 1                                                               
     # Output: 
     # w = d x 1                                                                
-    # IMPLEMENT THIS METHOD                                                   
+    # IMPLEMENT THIS METHOD
+    # (X.T x X)-1 * X.T y                                                   
+    w = np.dot(np.linalg.inv(np.dot(X.T, X)) , np.dot(X.T, y))
     return w
 
 def learnRidgeRegression(X,y,lambd):
@@ -96,7 +98,11 @@ def testOLERegression(w,Xtest,ytest):
     # rmse
     
     # IMPLEMENT THIS METHOD
-    return rmse
+    
+    rmse = np.square( np.subtract( ytest, np.dot(Xtest, w) ) )
+    rmse /= Xtest.shape[0]
+    rmse = np.sqrt(rmse)
+    return np.sum(rmse)
 
 def regressionObjVal(w, X, y, lambd):
 
@@ -125,6 +131,7 @@ if sys.version_info.major == 2:
 else:
     X,y,Xtest,ytest = pickle.load(open('sample.pickle','rb'),encoding = 'latin1')
 
+"""
 # LDA
 means,covmat = ldaLearn(X,y)
 ldaacc = ldaTest(means,covmat,Xtest,ytest)
@@ -151,7 +158,7 @@ plt.show()
 zacc,zqdares = qdaTest(means,covmats,xx,np.zeros((xx.shape[0],1)))
 plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])))
 plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
-
+"""
 # Problem 2
 
 if sys.version_info.major == 2:
