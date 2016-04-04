@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import pickle
 import sys
 import numpy as np
+from itertools import izip
 
 def ldaLearn(X,y):
     # Inputs
@@ -16,19 +17,17 @@ def ldaLearn(X,y):
     #
     # Outputs
     # means - A d x k matrix containing learnt means for each of the k classes
-    # covmat - A single d x d learnt covariance matrix 
-    
-    # IMPLEMENT THIS METHOD
-    
+    # covmat - A single d x d learnt covariance matrix     
     N = X.shape[0]
     d = X.shape[1]
     uniqueClasses = np.unique(y)
     noUniqueClasses = len(uniqueClasses)
-    means = []
-    for i in xrange(noUniqueClasses):
-        means.append(np.mean(X[y==uniqueClasses[i]],axis=0))
-    covmat = np.cov(X,rowvar=0) 
-    return means,covmat
+    y=np.squeeze(y,axis=1)
+    means = np.array(np.mean(X[y==uniqueClasses[0]],axis=0))
+    for i in xrange(1,noUniqueClasses):
+        means=np.vstack((means,np.mean(X[y==uniqueClasses[i]],axis=0)))
+    covmat = np.cov(X,rowvar=0)
+    return means.T,covmat
 
 def qdaLearn(X,y):
     # Inputs
@@ -38,10 +37,17 @@ def qdaLearn(X,y):
     # Outputs
     # means - A d x k matrix containing learnt means for each of the k classes
     # covmats - A list of k d x d learnt covariance matrices for each of the k classes
-    
-    # IMPLEMENT THIS METHOD
-    
-    return means,covmats
+    N = X.shape[0]
+    d = X.shape[1]
+    uniqueClasses = np.unique(y)
+    noUniqueClasses = len(uniqueClasses)
+    y=np.squeeze(y,axis=1)
+    means = np.array(np.mean(X[y==uniqueClasses[0]],axis=0))
+    covmats = np.array([np.cov(X[y==uniqueClasses[0]],rowvar=0)])
+    for i in xrange(1,noUniqueClasses):
+        means = np.vstack((means,np.mean(X[y==uniqueClasses[i]],axis=0)))
+        covmats = np.vstack((covmats,[np.cov(X[y==uniqueClasses[i]],rowvar=0)]))
+    return means.T,covmats
 
 def ldaTest(means,covmat,Xtest,ytest):
     # Inputs
@@ -51,9 +57,27 @@ def ldaTest(means,covmat,Xtest,ytest):
     # Outputs
     # acc - A scalar accuracy value
     # ypred - N x 1 column vector indicating the predicted labels
-
-    # IMPLEMENT THIS METHOD
-    return acc,ypred
+    invsigma = np.linalg.inv(covmat)
+    detsigma = np.linalg.det(covmat)
+    d = len(covmat)
+    predictedLabels=[]
+    for singleTest in Xtest:
+        maximum = float('-inf')
+        index=0
+        for classNo,mean in enumerate(means.T):
+            xMinusMean = singleTest - mean
+            xMinusMean = xMinusMean.reshape(2,1)
+            denominator = ((2*np.pi)**(d/2))*(detsigma**0.5)
+            epiPower = -0.5*np.dot(np.dot(xMinusMean.T,invsigma),xMinusMean)
+            value = np.exp(epiPower)/denominator
+            if value > maximum:
+                maximum = value
+                index = classNo
+        predictedLabels.append(float(index)+1)
+    predictedLabels = np.array(predictedLabels)
+    ytest=ytest.reshape(ytest.size)
+    acc = 100*np.mean(predictedLabels == ytest)    
+    return acc,predictedLabels
 
 def qdaTest(means,covmats,Xtest,ytest):
     # Inputs
@@ -63,9 +87,27 @@ def qdaTest(means,covmats,Xtest,ytest):
     # Outputs
     # acc - A scalar accuracy value
     # ypred - N x 1 column vector indicating the predicted labels
-
-    # IMPLEMENT THIS METHOD
-    return acc,ypred
+    d = len(covmat)
+    predictedLabels=[]
+    for singleTest in Xtest:
+        maximum = float('-inf')
+        index=0
+        for classNo,mean in enumerate(means.T):
+            xMinusMean = singleTest - mean
+            xMinusMean = xMinusMean.reshape(2,1)
+            invsigma = np.linalg.inv(covmats[classNo])
+            detsigma = np.linalg.det(covmats[classNo])
+            denominator = ((2*np.pi)**(d/2))*(detsigma**0.5)
+            epiPower = -0.5*np.dot(np.dot(xMinusMean.T,invsigma),xMinusMean)
+            value = np.exp(epiPower)/denominator
+            if value > maximum:
+                maximum = value
+                index = classNo
+        predictedLabels.append(float(index)+1)
+    predictedLabels = np.array(predictedLabels)
+    ytest=ytest.reshape(ytest.size)
+    acc = 100*np.mean(predictedLabels == ytest)    
+    return acc,predictedLabels
 
 def learnOLERegression(X,y):
     # Inputs:                                                         
@@ -129,8 +171,9 @@ else:
 means,covmat = ldaLearn(X,y)
 ldaacc = ldaTest(means,covmat,Xtest,ytest)
 print('LDA Accuracy = '+str(ldaacc))
-# QDA
+# # QDA
 means,covmats = qdaLearn(X,y)
+
 qdaacc = qdaTest(means,covmats,Xtest,ytest)
 print('QDA Accuracy = '+str(qdaacc))
 
@@ -152,64 +195,64 @@ zacc,zqdares = qdaTest(means,covmats,xx,np.zeros((xx.shape[0],1)))
 plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])))
 plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
 
-# Problem 2
+# # Problem 2
 
-if sys.version_info.major == 2:
-    X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'))
-else:
-    X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'),encoding = 'latin1')
+# if sys.version_info.major == 2:
+#     X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'))
+# else:
+#     X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'),encoding = 'latin1')
 
-# add intercept
-X_i = np.concatenate((np.ones((X.shape[0],1)), X), axis=1)
-Xtest_i = np.concatenate((np.ones((Xtest.shape[0],1)), Xtest), axis=1)
+# # add intercept
+# X_i = np.concatenate((np.ones((X.shape[0],1)), X), axis=1)
+# Xtest_i = np.concatenate((np.ones((Xtest.shape[0],1)), Xtest), axis=1)
 
-w = learnOLERegression(X,y)
-mle = testOLERegression(w,Xtest,ytest)
+# w = learnOLERegression(X,y)
+# mle = testOLERegression(w,Xtest,ytest)
 
-w_i = learnOLERegression(X_i,y)
-mle_i = testOLERegression(w_i,Xtest_i,ytest)
+# w_i = learnOLERegression(X_i,y)
+# mle_i = testOLERegression(w_i,Xtest_i,ytest)
 
-print('RMSE without intercept '+str(mle))
-print('RMSE with intercept '+str(mle_i))
+# print('RMSE without intercept '+str(mle))
+# print('RMSE with intercept '+str(mle_i))
 
-# Problem 3
-k = 101
-lambdas = np.linspace(0, 1, num=k)
-i = 0
-rmses3 = np.zeros((k,1))
-for lambd in lambdas:
-    w_l = learnRidgeRegression(X_i,y,lambd)
-    rmses3[i] = testOLERegression(w_l,Xtest_i,ytest)
-    i = i + 1
-plt.plot(lambdas,rmses3)
+# # Problem 3
+# k = 101
+# lambdas = np.linspace(0, 1, num=k)
+# i = 0
+# rmses3 = np.zeros((k,1))
+# for lambd in lambdas:
+#     w_l = learnRidgeRegression(X_i,y,lambd)
+#     rmses3[i] = testOLERegression(w_l,Xtest_i,ytest)
+#     i = i + 1
+# plt.plot(lambdas,rmses3)
 
-# Problem 4
-k = 101
-lambdas = np.linspace(0, 1, num=k)
-i = 0
-rmses4 = np.zeros((k,1))
-opts = {'maxiter' : 100}    # Preferred value.                                                
-w_init = np.ones((X_i.shape[1],1))
-for lambd in lambdas:
-    args = (X_i, y, lambd)
-    w_l = minimize(regressionObjVal, w_init, jac=True, args=args,method='CG', options=opts)
-    w_l = np.transpose(np.array(w_l.x))
-    w_l = np.reshape(w_l,[len(w_l),1])
-    rmses4[i] = testOLERegression(w_l,Xtest_i,ytest)
-    i = i + 1
-plt.plot(lambdas,rmses4)
+# # Problem 4
+# k = 101
+# lambdas = np.linspace(0, 1, num=k)
+# i = 0
+# rmses4 = np.zeros((k,1))
+# opts = {'maxiter' : 100}    # Preferred value.                                                
+# w_init = np.ones((X_i.shape[1],1))
+# for lambd in lambdas:
+#     args = (X_i, y, lambd)
+#     w_l = minimize(regressionObjVal, w_init, jac=True, args=args,method='CG', options=opts)
+#     w_l = np.transpose(np.array(w_l.x))
+#     w_l = np.reshape(w_l,[len(w_l),1])
+#     rmses4[i] = testOLERegression(w_l,Xtest_i,ytest)
+#     i = i + 1
+# plt.plot(lambdas,rmses4)
 
 
-# Problem 5
-pmax = 7
-lambda_opt = lambdas[np.argmin(rmses4)]
-rmses5 = np.zeros((pmax,2))
-for p in range(pmax):
-    Xd = mapNonLinear(X[:,2],p)
-    Xdtest = mapNonLinear(Xtest[:,2],p)
-    w_d1 = learnRidgeRegression(Xd,y,0)
-    rmses5[p,0] = testOLERegression(w_d1,Xdtest,ytest)
-    w_d2 = learnRidgeRegression(Xd,y,lambda_opt)
-    rmses5[p,1] = testOLERegression(w_d2,Xdtest,ytest)
-plt.plot(range(pmax),rmses5)
-plt.legend(('No Regularization','Regularization'))
+# # Problem 5
+# pmax = 7
+# lambda_opt = lambdas[np.argmin(rmses4)]
+# rmses5 = np.zeros((pmax,2))
+# for p in range(pmax):
+#     Xd = mapNonLinear(X[:,2],p)
+#     Xdtest = mapNonLinear(Xtest[:,2],p)
+#     w_d1 = learnRidgeRegression(Xd,y,0)
+#     rmses5[p,0] = testOLERegression(w_d1,Xdtest,ytest)
+#     w_d2 = learnRidgeRegression(Xd,y,lambda_opt)
+#     rmses5[p,1] = testOLERegression(w_d2,Xdtest,ytest)
+# plt.plot(range(pmax),rmses5)
+# plt.legend(('No Regularization','Regularization'))
