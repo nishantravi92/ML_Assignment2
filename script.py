@@ -86,7 +86,12 @@ def learnRidgeRegression(X,y,lambd):
     # w = d x 1                                                                
 
     # IMPLEMENT THIS METHOD
-
+    #(lambda*identity + X^2)-1 *X.T * y
+    XProduct = np.dot(X.T, X)
+    np.fill_diagonal(XProduct, lambd)
+    second = np.dot(X.T, y)
+    w = np.dot(np.linalg.inv(XProduct), second)
+    print w
     return w
 
 def testOLERegression(w,Xtest,ytest):
@@ -110,6 +115,7 @@ def regressionObjVal(w, X, y, lambd):
     # lambda                                                                  
 
     # IMPLEMENT THIS METHOD                                             
+
     return error, error_grad
 
 def mapNonLinear(x,p):
