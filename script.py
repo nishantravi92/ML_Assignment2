@@ -160,9 +160,18 @@ def regressionObjVal(w, X, y, lambd):
     # IMPLEMENT THIS METHOD                                             
     # error = 1/2(y-xw)'(y-xw) + 1/2 lambda * w'w
     # error_grad = -y'x + 1/2 w'x'x + 1/2 lamda*w'
+    
+    w = np.reshape(w,(w.size,1))
+    # print "X"+str(X.shape)
+    # print "w"+str(w.shape)
     yMinusXW = y - np.dot(X,w)
+    # print "yMinusXW"+str(yMinusXW.shape)
     error = (0.5*np.dot((yMinusXW).T , yMinusXW)) + (0.5*lambd*np.dot(w.T,w))
-    error_grad = (-1*np.dot(y.T,x))+(0.5*np.dot(np.dot(w.T,X.T),X))+(0.5*lambd*w.T)
+    error = error.flatten()
+    # print "y"+str(y.shape)
+    error_grad = (-1*np.dot(y.T,X))+(0.5*np.dot(np.dot(w.T,X.T),X))+(0.5*lambd*w.T)
+    error_grad = np.reshape(error_grad, ((error_grad.size),1))
+    error_grad = error_grad.flatten()
     return error, error_grad
 
 def mapNonLinear(x,p):
@@ -180,44 +189,40 @@ def mapNonLinear(x,p):
 
 # Problem 1
 # load the sample data 
-"""                                                                
+                                                                
 if sys.version_info.major == 2:
     X,y,Xtest,ytest = pickle.load(open('sample.pickle','rb'))
 else:
     X,y,Xtest,ytest = pickle.load(open('sample.pickle','rb'),encoding = 'latin1')
 
 # LDA
-# means,covmat = ldaLearn(X,y)
-# ldaacc = ldaTest(means,covmat,Xtest,ytest)
-# print('LDA Accuracy = '+str(ldaacc))
-# # # QDA
-# means,covmats = qdaLearn(X,y)
+means,covmat = ldaLearn(X,y)
+ldaacc = ldaTest(means,covmat,Xtest,ytest)
+print('LDA Accuracy = '+str(ldaacc))
+# # QDA
+means,covmats = qdaLearn(X,y)
 
-# qdaacc = qdaTest(means,covmats,Xtest,ytest)
-# print('QDA Accuracy = '+str(qdaacc))
+qdaacc = qdaTest(means,covmats,Xtest,ytest)
+print('QDA Accuracy = '+str(qdaacc))
 
-# # plotting boundaries
-# x1 = np.linspace(-5,20,100)
-# x2 = np.linspace(-5,20,100)
-# xx1,xx2 = np.meshgrid(x1,x2)
-# xx = np.zeros((x1.shape[0]*x2.shape[0],2))
-# xx[:,0] = xx1.ravel()
-# xx[:,1] = xx2.ravel()
+# plotting boundaries
+x1 = np.linspace(-5,20,100)
+x2 = np.linspace(-5,20,100)
+xx1,xx2 = np.meshgrid(x1,x2)
+xx = np.zeros((x1.shape[0]*x2.shape[0],2))
+xx[:,0] = xx1.ravel()
+xx[:,1] = xx2.ravel()
 
-# zacc,zldares = ldaTest(means,covmat,xx,np.zeros((xx.shape[0],1)))
-# plt.contourf(x1,x2,zldares.reshape((x1.shape[0],x2.shape[0])))
-# plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
+zacc,zldares = ldaTest(means,covmat,xx,np.zeros((xx.shape[0],1)))
+plt.contourf(x1,x2,zldares.reshape((x1.shape[0],x2.shape[0])))
+plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
 
-# # plt.show()
-
-# zacc,zqdares = qdaTest(means,covmats,xx,np.zeros((xx.shape[0],1)))
-# plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])))
-# plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
+# plt.show()
 
 zacc,zqdares = qdaTest(means,covmats,xx,np.zeros((xx.shape[0],1)))
 plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])))
 plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
-"""
+
 # Problem 2
 
 
@@ -249,7 +254,7 @@ for lambd in lambdas:
     rmses3[i] = testOLERegression(w_l,Xtest_i,ytest)
     i = i + 1
 plt.plot(lambdas,rmses3)
-plt.show()
+# plt.show()
 
 # Problem 4
 k = 101
@@ -269,15 +274,15 @@ plt.plot(lambdas,rmses4)
 
 
 # # Problem 5
-# pmax = 7
-# lambda_opt = lambdas[np.argmin(rmses4)]
-# rmses5 = np.zeros((pmax,2))
-# for p in range(pmax):
-#     Xd = mapNonLinear(X[:,2],p)
-#     Xdtest = mapNonLinear(Xtest[:,2],p)
-#     w_d1 = learnRidgeRegression(Xd,y,0)
-#     rmses5[p,0] = testOLERegression(w_d1,Xdtest,ytest)
-#     w_d2 = learnRidgeRegression(Xd,y,lambda_opt)
-#     rmses5[p,1] = testOLERegression(w_d2,Xdtest,ytest)
-# plt.plot(range(pmax),rmses5)
-# plt.legend(('No Regularization','Regularization'))
+pmax = 7
+lambda_opt = lambdas[np.argmin(rmses4)]
+rmses5 = np.zeros((pmax,2))
+for p in range(pmax):
+    Xd = mapNonLinear(X[:,2],p)
+    Xdtest = mapNonLinear(Xtest[:,2],p)
+    w_d1 = learnRidgeRegression(Xd,y,0)
+    rmses5[p,0] = testOLERegression(w_d1,Xdtest,ytest)
+    w_d2 = learnRidgeRegression(Xd,y,lambda_opt)
+    rmses5[p,1] = testOLERegression(w_d2,Xdtest,ytest)
+plt.plot(range(pmax),rmses5)
+plt.legend(('No Regularization','Regularization'))
