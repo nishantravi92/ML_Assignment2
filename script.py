@@ -158,16 +158,11 @@ def regressionObjVal(w, X, y, lambd):
     # lambda                                                                  
 
     # IMPLEMENT THIS METHOD                                             
-    #0.5*(y - X w)^2+ 0.5* lambda W * W.T
-    w = w.reshape(w.shape[0], 1)
-    first  = np.subtract(y, np.dot(X, w) )
-    first  = np.dot(first.T, first)
-    second =  lambd*0.5*np.dot(w.T, w)
-
-    error = first + second
-    error = error.flatten()
-
-
+    # error = 1/2(y-xw)'(y-xw) + 1/2 lambda * w'w
+    # error_grad = -y'x + 1/2 w'x'x + 1/2 lamda*w'
+    yMinusXW = y - np.dot(X,w)
+    error = (0.5*np.dot((yMinusXW).T , yMinusXW)) + (0.5*lambd*np.dot(w.T,w))
+    error_grad = (-1*np.dot(y.T,x))+(0.5*np.dot(np.dot(w.T,X.T),X))+(0.5*lambd*w.T)
     return error, error_grad
 
 def mapNonLinear(x,p):
@@ -191,79 +186,80 @@ else:
     X,y,Xtest,ytest = pickle.load(open('sample.pickle','rb'),encoding = 'latin1')
 
 # LDA
-means,covmat = ldaLearn(X,y)
-ldaacc = ldaTest(means,covmat,Xtest,ytest)
-print('LDA Accuracy = '+str(ldaacc))
-# # QDA
-means,covmats = qdaLearn(X,y)
+# means,covmat = ldaLearn(X,y)
+# ldaacc = ldaTest(means,covmat,Xtest,ytest)
+# print('LDA Accuracy = '+str(ldaacc))
+# # # QDA
+# means,covmats = qdaLearn(X,y)
 
-qdaacc = qdaTest(means,covmats,Xtest,ytest)
-print('QDA Accuracy = '+str(qdaacc))
+# qdaacc = qdaTest(means,covmats,Xtest,ytest)
+# print('QDA Accuracy = '+str(qdaacc))
 
-# plotting boundaries
-x1 = np.linspace(-5,20,100)
-x2 = np.linspace(-5,20,100)
-xx1,xx2 = np.meshgrid(x1,x2)
-xx = np.zeros((x1.shape[0]*x2.shape[0],2))
-xx[:,0] = xx1.ravel()
-xx[:,1] = xx2.ravel()
+# # plotting boundaries
+# x1 = np.linspace(-5,20,100)
+# x2 = np.linspace(-5,20,100)
+# xx1,xx2 = np.meshgrid(x1,x2)
+# xx = np.zeros((x1.shape[0]*x2.shape[0],2))
+# xx[:,0] = xx1.ravel()
+# xx[:,1] = xx2.ravel()
 
-zacc,zldares = ldaTest(means,covmat,xx,np.zeros((xx.shape[0],1)))
-plt.contourf(x1,x2,zldares.reshape((x1.shape[0],x2.shape[0])))
-plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
+# zacc,zldares = ldaTest(means,covmat,xx,np.zeros((xx.shape[0],1)))
+# plt.contourf(x1,x2,zldares.reshape((x1.shape[0],x2.shape[0])))
+# plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
 
-plt.show()
+# # plt.show()
 
-zacc,zqdares = qdaTest(means,covmats,xx,np.zeros((xx.shape[0],1)))
-plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])))
-plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
+# zacc,zqdares = qdaTest(means,covmats,xx,np.zeros((xx.shape[0],1)))
+# plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])))
+# plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
 
 # # Problem 2
 
-# if sys.version_info.major == 2:
-#     X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'))
-# else:
-#     X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'),encoding = 'latin1')
+if sys.version_info.major == 2:
+    X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'))
+else:
+    X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'),encoding = 'latin1')
 
-# # add intercept
-# X_i = np.concatenate((np.ones((X.shape[0],1)), X), axis=1)
-# Xtest_i = np.concatenate((np.ones((Xtest.shape[0],1)), Xtest), axis=1)
+# add intercept
+X_i = np.concatenate((np.ones((X.shape[0],1)), X), axis=1)
+Xtest_i = np.concatenate((np.ones((Xtest.shape[0],1)), Xtest), axis=1)
 
-# w = learnOLERegression(X,y)
-# mle = testOLERegression(w,Xtest,ytest)
+w = learnOLERegression(X,y)
+mle = testOLERegression(w,Xtest,ytest)
 
-# w_i = learnOLERegression(X_i,y)
-# mle_i = testOLERegression(w_i,Xtest_i,ytest)
+w_i = learnOLERegression(X_i,y)
+mle_i = testOLERegression(w_i,Xtest_i,ytest)
 
 # print('RMSE without intercept '+str(mle))
 # print('RMSE with intercept '+str(mle_i))
 
-# # Problem 3
-# k = 101
-# lambdas = np.linspace(0, 1, num=k)
-# i = 0
-# rmses3 = np.zeros((k,1))
-# for lambd in lambdas:
-#     w_l = learnRidgeRegression(X_i,y,lambd)
-#     rmses3[i] = testOLERegression(w_l,Xtest_i,ytest)
-#     i = i + 1
-# plt.plot(lambdas,rmses3)
+Problem 3
+k = 101
+lambdas = np.linspace(0, 1, num=k)
+i = 0
+rmses3 = np.zeros((k,1))
+for lambd in lambdas:
+    w_l = learnRidgeRegression(X_i,y,lambd)
+    rmses3[i] = testOLERegression(w_l,Xtest_i,ytest)
+    i = i + 1
+plt.plot(lambdas,rmses3)
+plt.show()
 
-# # Problem 4
-# k = 101
-# lambdas = np.linspace(0, 1, num=k)
-# i = 0
-# rmses4 = np.zeros((k,1))
-# opts = {'maxiter' : 100}    # Preferred value.                                                
-# w_init = np.ones((X_i.shape[1],1))
-# for lambd in lambdas:
-#     args = (X_i, y, lambd)
-#     w_l = minimize(regressionObjVal, w_init, jac=True, args=args,method='CG', options=opts)
-#     w_l = np.transpose(np.array(w_l.x))
-#     w_l = np.reshape(w_l,[len(w_l),1])
-#     rmses4[i] = testOLERegression(w_l,Xtest_i,ytest)
-#     i = i + 1
-# plt.plot(lambdas,rmses4)
+# Problem 4
+k = 101
+lambdas = np.linspace(0, 1, num=k)
+i = 0
+rmses4 = np.zeros((k,1))
+opts = {'maxiter' : 100}    # Preferred value.                                                
+w_init = np.ones((X_i.shape[1],1))
+for lambd in lambdas:
+    args = (X_i, y, lambd)
+    w_l = minimize(regressionObjVal, w_init, jac=True, args=args,method='CG', options=opts)
+    w_l = np.transpose(np.array(w_l.x))
+    w_l = np.reshape(w_l,[len(w_l),1])
+    rmses4[i] = testOLERegression(w_l,Xtest_i,ytest)
+    i = i + 1
+plt.plot(lambdas,rmses4)
 
 
 # # Problem 5
