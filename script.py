@@ -115,8 +115,9 @@ def learnOLERegression(X,y):
     # y = N x 1                                                               
     # Output: 
     # w = d x 1                                                                
-    # IMPLEMENT THIS METHOD                                                   
-    return w
+    # IMPLEMENT THIS METHOD
+    # (X.T x X)-1 * X.T y                                                   
+    return np.dot(np.linalg.inv(np.dot(X.T, X)) , np.dot(X.T, y))
 
 def learnRidgeRegression(X,y,lambd):
     # Inputs:
@@ -126,7 +127,13 @@ def learnRidgeRegression(X,y,lambd):
     # Output:                                                                  
     # w = d x 1                                                                
 
-    # IMPLEMENT THIS METHOD                                                   
+    # IMPLEMENT THIS METHOD
+    #(lambda*identity + X^2)-1 *X.T * y
+    XProduct = np.dot(X.T, X)
+    np.fill_diagonal(XProduct, lambd)
+    second = np.dot(X.T, y)
+    w = np.dot(np.linalg.inv(XProduct), second)
+    print w
     return w
 
 def testOLERegression(w,Xtest,ytest):
@@ -138,7 +145,10 @@ def testOLERegression(w,Xtest,ytest):
     # rmse
     
     # IMPLEMENT THIS METHOD
-    return rmse
+    squaredDifference = np.square( np.subtract( ytest, np.dot(Xtest, w) ) )
+    rmse = np.sum(squaredDifference)
+    rmse /= Xtest.shape[0]
+    return sqrt(rmse)
 
 def regressionObjVal(w, X, y, lambd):
 
@@ -156,7 +166,9 @@ def mapNonLinear(x,p):
     # Outputs:                                                                 
     # Xd - (N x (d+1))                                                         
     # IMPLEMENT THIS METHOD
-    return Xd
+    #Conver x to an array of scalars
+
+    return np.array([x**p for p in range(0,p+1)])
 
 # Main script
 
