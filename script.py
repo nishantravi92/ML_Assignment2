@@ -128,11 +128,11 @@ def learnRidgeRegression(X,y,lambd):
     # w = d x 1                                                                
 
     # IMPLEMENT THIS METHOD
-    #(lambda*identity + X^2)-1 *X.T * y
+    #(lambda*identity + X.T * X)-1 *X.T * y
     XProduct = np.dot(X.T, X)
     identity = np.identity(XProduct.shape[0])
-    lambda_identity = np.multiply(identity, lambd)
-    first = np.add( lambda_identity, XProduct)
+    lamb = np.multiply(identity, lambd)
+    first = np.add( lamb, XProduct)
     second = np.dot(X.T, y)
     w = np.dot(np.linalg.inv(first), second)
     return w
@@ -179,7 +179,8 @@ def mapNonLinear(x,p):
 # Main script
 
 # Problem 1
-# load the sample data                                                                 
+# load the sample data 
+"""                                                                
 if sys.version_info.major == 2:
     X,y,Xtest,ytest = pickle.load(open('sample.pickle','rb'))
 else:
@@ -213,7 +214,12 @@ else:
 # plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])))
 # plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
 
-# # Problem 2
+zacc,zqdares = qdaTest(means,covmats,xx,np.zeros((xx.shape[0],1)))
+plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])))
+plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
+"""
+# Problem 2
+
 
 if sys.version_info.major == 2:
     X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'))
@@ -230,10 +236,10 @@ mle = testOLERegression(w,Xtest,ytest)
 w_i = learnOLERegression(X_i,y)
 mle_i = testOLERegression(w_i,Xtest_i,ytest)
 
-# print('RMSE without intercept '+str(mle))
-# print('RMSE with intercept '+str(mle_i))
+print('RMSE without intercept '+str(mle))
+print('RMSE with intercept '+str(mle_i))
 
-Problem 3
+# Problem 3
 k = 101
 lambdas = np.linspace(0, 1, num=k)
 i = 0
