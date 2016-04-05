@@ -129,6 +129,8 @@ def learnRidgeRegression(X,y,lambd):
 
     # IMPLEMENT THIS METHOD
     #(lambda*identity + X.T * X)-1 *X.T * y
+   # print X.shape
+    #print y.shape
     XProduct = np.dot(X.T, X)
     identity = np.identity(XProduct.shape[0])
     lamb = np.multiply(identity, lambd)
@@ -168,10 +170,19 @@ def regressionObjVal(w, X, y, lambd):
     # print "yMinusXW"+str(yMinusXW.shape)
     error = (0.5*np.dot((yMinusXW).T , yMinusXW)) + (0.5*lambd*np.dot(w.T,w))
     error = error.flatten()
-    # print "y"+str(y.shape)
-    error_grad = (-1*np.dot(y.T,X))+(0.5*np.dot(np.dot(w.T,X.T),X))+(0.5*lambd*w.T)
+    
+    #-------------------------------------------Calculation of error Grad---------------------------------------------
+    
+    error_grad = (-1*np.dot(y.T,X))+(np.dot(np.dot(w.T,X.T),X))+(lambd*w.T)
     error_grad = np.reshape(error_grad, ((error_grad.size),1))
     error_grad = error_grad.flatten()
+    """ 
+    first = np.dot( np.dot(X.T, X), w)
+    second =  np.dot(X.T, y)
+    third = np.multiply(w, lambd)
+    error_grad = first - second + third
+    error_grad = error_grad.flatten()
+    """
     return error, error_grad
 
 def mapNonLinear(x,p):
@@ -182,8 +193,11 @@ def mapNonLinear(x,p):
     # Xd - (N x (d+1))                                                         
     # IMPLEMENT THIS METHOD
     #Conver x to an array of scalars
-
-    return np.array([x**p for p in range(0,p+1)])
+    Xd = np.empty([x.shape[0], p+1])
+    for i in range(x.shape[0]):
+        for j in range(p+1):
+            Xd[i][j] = x[i]**j      
+    return Xd
 
 # Main script
 
@@ -214,18 +228,16 @@ xx[:,0] = xx1.ravel()
 xx[:,1] = xx2.ravel()
 
 zacc,zldares = ldaTest(means,covmat,xx,np.zeros((xx.shape[0],1)))
-plt.contourf(x1,x2,zldares.reshape((x1.shape[0],x2.shape[0])))
-plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
+#plt.contourf(x1,x2,zldares.reshape((x1.shape[0],x2.shape[0])))
+#plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
 
 # plt.show()
 
 zacc,zqdares = qdaTest(means,covmats,xx,np.zeros((xx.shape[0],1)))
-plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])))
-plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
+#plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])))
+#plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
 
 # Problem 2
-
-
 if sys.version_info.major == 2:
     X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'))
 else:
@@ -236,12 +248,16 @@ X_i = np.concatenate((np.ones((X.shape[0],1)), X), axis=1)
 Xtest_i = np.concatenate((np.ones((Xtest.shape[0],1)), Xtest), axis=1)
 
 w = learnOLERegression(X,y)
+#mle_learn_data = testOLERegression(w, X, y)
 mle = testOLERegression(w,Xtest,ytest)
 
 w_i = learnOLERegression(X_i,y)
+#mle_learn_data_intercept = testOLERegression(w_i, X_i, y)
 mle_i = testOLERegression(w_i,Xtest_i,ytest)
 
+#print ('RMSE on training data without intercept')+str(mle_learn_data)
 print('RMSE without intercept '+str(mle))
+#print ('RMSE on training data with intercept ')+str(mle_learn_data_intercept)
 print('RMSE with intercept '+str(mle_i))
 
 # Problem 3
@@ -249,12 +265,18 @@ k = 101
 lambdas = np.linspace(0, 1, num=k)
 i = 0
 rmses3 = np.zeros((k,1))
+rmses1 = np.zeros((k,1))
 for lambd in lambdas:
     w_l = learnRidgeRegression(X_i,y,lambd)
+    rmses1[i] = testOLERegression(w_l, X_i, y)
     rmses3[i] = testOLERegression(w_l,Xtest_i,ytest)
     i = i + 1
 plt.plot(lambdas,rmses3)
-# plt.show()
+plt.plot(lambdas, rmses1)
+plt.ylabel('RMSE')
+plt.xlabel('Lambda')
+plt.legend(('Test data','Training data'))
+plt.show()
 
 # Problem 4
 k = 101
@@ -270,8 +292,9 @@ for lambd in lambdas:
     w_l = np.reshape(w_l,[len(w_l),1])
     rmses4[i] = testOLERegression(w_l,Xtest_i,ytest)
     i = i + 1
-plt.plot(lambdas,rmses4)
-
+#plt.plot(lambdas,rmses4)
+#plt.legend(('RMSE','Lambda')) 
+#plt.show()
 
 # # Problem 5
 pmax = 7
@@ -284,5 +307,6 @@ for p in range(pmax):
     rmses5[p,0] = testOLERegression(w_d1,Xdtest,ytest)
     w_d2 = learnRidgeRegression(Xd,y,lambda_opt)
     rmses5[p,1] = testOLERegression(w_d2,Xdtest,ytest)
-plt.plot(range(pmax),rmses5)
-plt.legend(('No Regularization','Regularization'))
+#plt.plot(range(pmax),rmses5)
+#plt.legend(('No Regularization','Regularization')) 
+#plt.show()
