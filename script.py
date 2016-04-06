@@ -203,7 +203,8 @@ def mapNonLinear(x,p):
 
 # Problem 1
 # load the sample data 
-                                                                
+               
+                                                              
 if sys.version_info.major == 2:
     X,y,Xtest,ytest = pickle.load(open('sample.pickle','rb'))
 else:
@@ -228,20 +229,20 @@ xx[:,0] = xx1.ravel()
 xx[:,1] = xx2.ravel()
 
 zacc,zldares = ldaTest(means,covmat,xx,np.zeros((xx.shape[0],1)))
-#plt.contourf(x1,x2,zldares.reshape((x1.shape[0],x2.shape[0])))
-#plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
-
-# plt.show()
+plt.contourf(x1,x2,zldares.reshape((x1.shape[0],x2.shape[0])))
+plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest) 
+plt.show()
 
 zacc,zqdares = qdaTest(means,covmats,xx,np.zeros((xx.shape[0],1)))
-#plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])))
-#plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
+plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])))
+plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
 
 # Problem 2
 if sys.version_info.major == 2:
     X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'))
 else:
     X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'),encoding = 'latin1')
+
 
 # add intercept
 X_i = np.concatenate((np.ones((X.shape[0],1)), X), axis=1)
@@ -250,11 +251,9 @@ Xtest_i = np.concatenate((np.ones((Xtest.shape[0],1)), Xtest), axis=1)
 w = learnOLERegression(X,y)
 #mle_learn_data = testOLERegression(w, X, y)
 mle = testOLERegression(w,Xtest,ytest)
-
 w_i = learnOLERegression(X_i,y)
 #mle_learn_data_intercept = testOLERegression(w_i, X_i, y)
-mle_i = testOLERegression(w_i,Xtest_i,ytest)
-
+mle_i = testOLERegression(w_i,Xtest_i,ytest) 
 #print ('RMSE on training data without intercept')+str(mle_learn_data)
 print('RMSE without intercept '+str(mle))
 #print ('RMSE on training data with intercept ')+str(mle_learn_data_intercept)
@@ -265,24 +264,28 @@ k = 101
 lambdas = np.linspace(0, 1, num=k)
 i = 0
 rmses3 = np.zeros((k,1))
-rmses1 = np.zeros((k,1))
+min_weights = np.empty([X.shape[1], 1])
 for lambd in lambdas:
     w_l = learnRidgeRegression(X_i,y,lambd)
-    rmses1[i] = testOLERegression(w_l, X_i, y)
     rmses3[i] = testOLERegression(w_l,Xtest_i,ytest)
     i = i + 1
-plt.plot(lambdas,rmses3)
-plt.plot(lambdas, rmses1)
-plt.ylabel('RMSE')
-plt.xlabel('Lambda')
-plt.legend(('Test data','Training data'))
-plt.show()
+plt.plot(lambdas,rmses3)    
+#print('RMSE with intercept for Problem 3 '+str(min_rmse3)) 
+#plt.plot(lambdas,rmses3)
+#plt.plot(lambdas, rmses1)
+#plt.ylabel('RMSE')
+#plt.xlabel('Lambda')
+#plt.legend(('Test data','Training data'))
+#plt.show()
 
 # Problem 4
 k = 101
 lambdas = np.linspace(0, 1, num=k)
 i = 0
 rmses4 = np.zeros((k,1))
+min_rmse3 = 9999.0
+min_lambda = 0
+min_weights = np.empty([X.shape[1], 1])
 opts = {'maxiter' : 100}    # Preferred value.                                                
 w_init = np.ones((X_i.shape[1],1))
 for lambd in lambdas:
@@ -292,14 +295,19 @@ for lambd in lambdas:
     w_l = np.reshape(w_l,[len(w_l),1])
     rmses4[i] = testOLERegression(w_l,Xtest_i,ytest)
     i = i + 1
-#plt.plot(lambdas,rmses4)
-#plt.legend(('RMSE','Lambda')) 
-#plt.show()
+plt.plot(lambdas,rmses4)
 
+"""
+print('RMSE with intercept for Problem 4 '+str(min_rmse3))    
+plt.plot(lambdas,rmses4)
+plt.plot(lambdas, rmses7)
+plt.legend(('RMSE','Lambda')) 
+plt.show()
+"""
 # # Problem 5
 pmax = 7
 lambda_opt = lambdas[np.argmin(rmses4)]
-rmses5 = np.zeros((pmax,2))
+rmses5 = np.zeros((pmax,2))  
 for p in range(pmax):
     Xd = mapNonLinear(X[:,2],p)
     Xdtest = mapNonLinear(Xtest[:,2],p)
@@ -307,6 +315,5 @@ for p in range(pmax):
     rmses5[p,0] = testOLERegression(w_d1,Xdtest,ytest)
     w_d2 = learnRidgeRegression(Xd,y,lambda_opt)
     rmses5[p,1] = testOLERegression(w_d2,Xdtest,ytest)
-#plt.plot(range(pmax),rmses5)
-#plt.legend(('No Regularization','Regularization')) 
-#plt.show()
+plt.plot(range(pmax),rmses5)       #Uncommment 
+plt.legend(('No Regularization','Regularization')) 
